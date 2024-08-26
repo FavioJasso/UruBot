@@ -8,10 +8,10 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Path to the JSON file
+# Path to the JSON file, also create the data file if not done already 
 DATA_FILE = "user_data.json"
 
-# Load data from JSON file
+# Load data from JSON file, and throws an empty dictionary if the file does not exist
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
