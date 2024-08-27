@@ -3,41 +3,48 @@ from discord.ext import commands
 import json
 import os
 
+# Configurar intents necesarios para leer el contenido del mensaje
 intents = discord.Intents.default()
 intents.message_content = True
 
+# Configurar el bot con el prefijo de comando
 bot = commands.Bot(command_prefix="!", intents=intents)
-client = discord.Client(intents=intents)
 
-# Path to the JSON file, also create the data file if not done already 
+# Ruta al archivo JSON
 DATA_FILE = "user_data.json"
-print("Bot Online")
-# Load data from JSON file, and throws an empty dictionary if the file does not exist
+
+# Cargar datos desde el archivo JSON o inicializar un diccionario vacío
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
             return json.load(f)
     return {}
 
-# Save data to JSON file
+# Guardar datos en el archivo JSON
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
+# Inicializar datos de usuario
 user_data = load_data()
 
 @bot.event
 async def on_ready():
-    print(f'Bot is online as {bot.user}')
+    print(f'Bot listo y conectado como {bot.user}')
 
 @bot.event
 async def on_message(message):
-    if message.author.bot:
+    # Ignorar los mensajes del propio bot para evitar un bucle infinito
+    if message.author == bot.user:
         return
-    
-    if "bump done" in message.content.lower() and message.author.id == "author id of disboard":
-        user = message.author
-        user_id = str(user.id)  # Store user ID as string for JSON ??? 
+
+    # Responder a "Hola, URUBOT"
+    if message.content.lower() == 'hola, urubot':
+        await message.channel.send(f'Hola, ¿cómo estás {message.author.name}?')
+
+    # Verificar si el mensaje contiene "bump done"
+    if "bump done" in message.content.lower() and message.author.id == 302050872383242240:
+        user_id = str(message.author.id)  # Convertir ID de usuario a cadena para el JSON
 
         if user_id not in user_data:
             user_data[user_id] = {"points": 0, "streak": 0}
@@ -52,8 +59,9 @@ async def on_message(message):
 
         save_data(user_data)
 
-        await message.channel.send(f"{user.mention} has been awarded points! Total points: {user_data[user_id]['points']}")
+        await message.channel.send(f"{message.author.mention} ha sido premiado con puntos! Puntos totales: {user_data[user_id]['points']}")
 
+    # Procesar comandos después de manejar mensajes
     await bot.process_commands(message)
 
 @bot.command(name='points')
@@ -65,26 +73,8 @@ async def check_points(ctx, member: discord.Member = None):
 
     if user_id in user_data:
         points = user_data[user_id]["points"]
-        await ctx.send(f"{member.mention} has {points} points.")
+        await ctx.send(f"{member.mention} tiene {points} puntos.")
     else:
-        await ctx.send(f"{member.mention} has no points yet.")
+        await ctx.send(f"{member.mention} aún no tiene puntos.")
 
-@client.event
-async def on_ready():
-    print(f'Bot listo y conectado como {client.user}')
-
-@client.event
-async def on_message(message):
-    # Ignora los mensajes del propio bot para evitar un bucle infinito
-    if message.author == client.user:
-        return
-
-    # Verificar si el mensaje es "Hola, URUBOT"
-    if message.content.lower() == 'hola, urubot':
-        # Responder con un saludo personalizado
-        await message.channel.send(f'Hola, ¿cómo estás {message.author.name}?')
-
-bot.run('bot token here')
-
-# The next step to consider is to add a command to reset the points of a user. Also consider the json file to store the data. 
-# The json file will store the user ID as the key and the points and streak as the values. How will discord handle this? Does it only take 1 main file or muiltiple? 
+bot.run('TOKEN_HERE')
