@@ -35,7 +35,7 @@ async def on_message(message):
     if message.author.bot:
         return
     
-    if "bump done" in message.content.lower() and message.author.id == "author id of disboard":
+    if "bump done" in message.content.lower() and message.author.id == 302050872383242240: #this is the disboard bot id 
         user = message.author
         user_id = str(user.id)  # Store user ID as string for JSON ??? 
 
