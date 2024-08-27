@@ -7,10 +7,11 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+client = discord.Client(intents=intents)
 
 # Path to the JSON file, also create the data file if not done already 
 DATA_FILE = "user_data.json"
-
+print("Bot Online")
 # Load data from JSON file, and throws an empty dictionary if the file does not exist
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -34,7 +35,7 @@ async def on_message(message):
     if message.author.bot:
         return
     
-    if "bump done" in message.content.lower() and message.author.id == 302050872383242240:
+    if "bump done" in message.content.lower() and message.author.id == "author id of disboard":
         user = message.author
         user_id = str(user.id)  # Store user ID as string for JSON ??? 
 
@@ -68,6 +69,22 @@ async def check_points(ctx, member: discord.Member = None):
     else:
         await ctx.send(f"{member.mention} has no points yet.")
 
-bot.run('YOUR_BOT_TOKEN')
+@client.event
+async def on_ready():
+    print(f'Bot listo y conectado como {client.user}')
+
+@client.event
+async def on_message(message):
+    # Ignora los mensajes del propio bot para evitar un bucle infinito
+    if message.author == client.user:
+        return
+
+    # Verificar si el mensaje es "Hola, URUBOT"
+    if message.content.lower() == 'hola, urubot':
+        # Responder con un saludo personalizado
+        await message.channel.send(f'Hola, ¿cómo estás {message.author.name}?')
+
+bot.run('bot token here')
+
 # The next step to consider is to add a command to reset the points of a user. Also consider the json file to store the data. 
 # The json file will store the user ID as the key and the points and streak as the values. How will discord handle this? Does it only take 1 main file or muiltiple? 
