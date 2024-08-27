@@ -69,3 +69,5 @@ async def check_points(ctx, member: discord.Member = None):
         await ctx.send(f"{member.mention} has no points yet.")
 
 bot.run('YOUR_BOT_TOKEN')
+# The next step to consider is to add a command to reset the points of a user. Also consider the json file to store the data. 
+# The json file will store the user ID as the key and the points and streak as the values. How will discord handle this? Does it only take 1 main file or muiltiple? 
