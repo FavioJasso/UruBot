@@ -17,8 +17,16 @@ DATA_FILE = "user_data.json"
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return {}
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                # Si el archivo JSON está corrupto o vacío, devuelve un diccionario vacío
+                return {}
+    else:
+        # Crear el archivo JSON vacío si no existe
+        with open(DATA_FILE, "w") as f:
+            json.dump({}, f)
+        return {}
 
 # Guardar datos en el archivo JSON
 def save_data(data):
@@ -42,8 +50,10 @@ async def on_message(message):
     if message.content.lower() == 'hola, urubot':
         await message.channel.send(f'Hola, ¿cómo estás {message.author.name}?')
 
-    # Verificar si el mensaje contiene "bump done"
-    if "bump done" in message.content.lower() and message.author.id == 302050872383242240:
+    # Verificar si el mensaje contiene "bump done" (confirmación de bump del bot de Disboard)
+    if "bump done" in message.content.lower() and message.author.id == 735147814878969968:
+        await message.channel.send("Has bumpeado el server con éxito")  # Mensaje de confirmación
+
         user_id = str(message.author.id)  # Convertir ID de usuario a cadena para el JSON
 
         if user_id not in user_data:
@@ -77,4 +87,17 @@ async def check_points(ctx, member: discord.Member = None):
     else:
         await ctx.send(f"{member.mention} aún no tiene puntos.")
 
-bot.run('TOKEN_HERE')
+@bot.command(name='addpoints')
+async def add_points(ctx, member: discord.Member, points: int):
+    user_id = str(member.id)
+
+    if user_id not in user_data:
+        user_data[user_id] = {"points": 0, "streak": 0}
+
+    user_data[user_id]["points"] += points
+    save_data(user_data)
+
+    await ctx.send(f"{points} puntos han sido añadidos a {member.mention}. Total de puntos: {user_data[user_id]['points']}")
+
+# Iniciar el bot con tu token
+bot.run('Token_Here')
