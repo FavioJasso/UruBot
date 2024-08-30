@@ -47,7 +47,7 @@ async def on_message(message):
         return
 
     # Verificar si el mensaje proviene del bot específico y contiene "Thx for bumping our Server!"
-    if message.author.id == 735147814878969968:  # ID del bot de Disboard u otro bot que utilices
+    if message.author.id == 1277645160376963167:  # ID del bot de Disboard u otro bot que utilices
         if "Thx for bumping our Server!" in message.content:
             # Extraer la primera mención en el mensaje
             if len(message.mentions) > 0:
