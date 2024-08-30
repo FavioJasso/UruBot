@@ -46,30 +46,45 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Responder a "Hola, URUBOT"
-    if message.content.lower() == 'hola, urubot':
-        await message.channel.send(f'Hola, ¿cómo estás {message.author.name}?')
+    # Verificar si el mensaje proviene del bot específico y contiene "Thx for bumping our Server!"
+    if message.author.id == 735147814878969968:  # ID del bot de Disboard u otro bot que utilices
+        if "Thx for bumping our Server!" in message.content:
+            # Extraer la primera mención en el mensaje
+            if len(message.mentions) > 0:
+                bump_user = message.mentions[0]  # Obtener el primer usuario mencionado
+                user_id = str(bump_user.id)  # Convertir ID de usuario a cadena para el JSON
 
-    # Verificar si el mensaje contiene "bump done" (confirmación de bump del bot de Disboard)
-    if "bump done" in message.content.lower() and message.author.id == 735147814878969968:
-        await message.channel.send("Has bumpeado el server con éxito")  # Mensaje de confirmación
+                # Inicializar puntos y racha si el usuario no está en los datos
+                if user_id not in user_data:
+                    user_data[user_id] = {"points": 0, "streak": 0}
 
-        user_id = str(message.author.id)  # Convertir ID de usuario a cadena para el JSON
+                # Incrementar el streak del usuario que hizo el bump
+                user_data[user_id]["streak"] += 1
 
-        if user_id not in user_data:
-            user_data[user_id] = {"points": 0, "streak": 0}
+                # Restablecer el streak de todos los demás usuarios
+                for other_user_id in user_data.keys():
+                    if str(other_user_id) != str(user_id):
+                        user_data[other_user_id]["streak"] = 0
 
-        user_data[user_id]["streak"] += 1
+                # Verificar si el usuario alcanza 3 de streak
+                if user_data[user_id]["streak"] == 3:
+                    user_data[user_id]["points"] += 2
+                    user_data[user_id]["streak"] = 0  # Restablecer el streak después de alcanzar 3
+                    message_to_send = f"{bump_user.mention} ha sido premiado con puntos adicionales por alcanzar una racha de 3! Puntos totales: {user_data[user_id]['points']}"
+                else:
+                    user_data[user_id]["points"] += 1
+                    if user_data[user_id]["streak"] == 2:
+                        message_to_send = f"{bump_user.mention} estás en una racha de 2! Puntos totales: {user_data[user_id]['points']}"
+                    else:
+                        message_to_send = f"{bump_user.mention} ha sido premiado! Puntos totales: {user_data[user_id]['points']}"
 
-        if user_data[user_id]["streak"] == 3:
-            user_data[user_id]["points"] += 2
-            user_data[user_id]["streak"] = 0
-        else:
-            user_data[user_id]["points"] += 1
+                # Guardar los datos actualizados
+                save_data(user_data)
 
-        save_data(user_data)
-
-        await message.channel.send(f"{message.author.mention} ha sido premiado con puntos! Puntos totales: {user_data[user_id]['points']}")
+                # Enviar mensaje de confirmación con los puntos del usuario
+                await message.channel.send(message_to_send)
+            else:
+                await message.channel.send("No se encontró ninguna mención en el mensaje.")
 
     # Procesar comandos después de manejar mensajes
     await bot.process_commands(message)
@@ -99,5 +114,4 @@ async def add_points(ctx, member: discord.Member, points: int):
 
     await ctx.send(f"{points} puntos han sido añadidos a {member.mention}. Total de puntos: {user_data[user_id]['points']}")
 
-# Iniciar el bot con tu token
-bot.run('Token_Here')
+bot.run('TOKEN_HERE')
